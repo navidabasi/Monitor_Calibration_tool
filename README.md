@@ -115,6 +115,81 @@ On macOS and Linux, use `.venv/bin/` instead of `.venv\Scripts\`.
 `python calibrate.py` also works from the checkout without installing; it
 keeps sessions next to the code in `./sessions`.
 
+## How to use it
+
+The app walks you through everything on screen (Setup, Prepare, Take photos,
+Results). This is the short version, and the things people get wrong.
+
+### 1. You need a phone camera app that saves RAW
+
+The analyzer measures **RAW photos (DNG)**. A normal JPEG or HEIC photo has
+already been processed by the phone, so it can't be used. The phone's built-in
+camera app usually can't be used either, because it can't lock ISO and shutter
+speed. Install a camera app with manual controls that saves DNG:
+
+| Phone | App |
+| --- | --- |
+| iPhone | **Adobe Lightroom** mobile (free): use its camera in *Professional* mode and set the format to **DNG** |
+| Android | **Open Camera** (free; turn on *Camera2 API* in its settings), or your phone's own *Pro* / *Manual* mode if it can save RAW (DNG) |
+
+You also need a tripod or a stack of books for the phone, a room you can make
+dark, and about 45 minutes (30 of them warming the monitors up).
+
+### 2. Take the photos
+
+1. **Run the app** (see above) and follow Setup and Prepare. Prepare turns off
+   everything that would change colors: HDR, Night light, color management,
+   limited-range output, OLED care features.
+2. **Set the camera once and don't touch it** (the app's *Take photos* page lists
+   these with the reasons):
+   - Mode: Professional / Pro / Manual. File format: **RAW (DNG)**.
+   - Main 1x lens only. Lowest ISO. White balance: Daylight (never Auto).
+   - Focus: manual, all the way to infinity (a slightly blurry chart is right).
+   - HDR, Night mode, flash and scene AI off. Exposure compensation 0.
+   - Landscape (sideways) for every shot, 3×3 grid on, and a 2 to 5 second timer.
+   - Shutter 1/60 s. Only the dark chart (shot 4) uses 1/4 s; switch back afterwards.
+3. **Frame every shot the same way:** put the phone on the tripod, pointing straight
+   at the screen, and move it until the chart's four corner squares sit on the
+   corners of the middle grid square. Keep the room dark and avoid reflections.
+4. **Take the shots.** Click *Show chart* for each, photograph it, and press Esc:
+   shot 1 on the reference monitor (optional), then shots 2, 3 and 4 on the monitor
+   you're calibrating. Each chart has an ID code, so the order and file names don't
+   matter. After adjusting the monitor, retake only shot 3.
+
+### 3. Get the photos to the computer **without changing them**
+
+This is the step that most often goes wrong. Many ways of sending a photo quietly
+convert it to a smaller JPEG or strip the RAW data: messaging apps, cloud
+previews, email, and the iPhone photo picker. The app needs the **original DNG
+files, byte for byte**.
+
+What works:
+
+- **A USB cable.** Copy the files straight from the phone. On Android pick
+  *File transfer*; on an iPhone use Lightroom's export with the size set to
+  **Original**, or copy from the phone with a cable and *Keep Originals*.
+- **A file-transfer app that sends files untouched.** The author used
+  Blip between phone and computer and it worked perfectly.
+  Other apps can work too, as long as they send the file as it is.
+- **A messaging app, only if it sends "as a file".** For example Telegram's
+  *File* option, never the *Photo* option.
+
+Check before you rely on a method: a real RAW photo is usually **10 to 25 MB**
+and its name ends in `.DNG`. If it's a few hundred KB, or the app says "This is a
+JPEG image, not a RAW photo, even if its name ends in .DNG", the file was converted
+on the way. Send it again another way. Test with one photo first.
+
+### 4. Drop the photos into the app
+
+On the *Results* page, drop the DNG files in any order. You get the white point,
+gamma, gray tint and near-black detail, plus the new Red, Green and Blue values to
+type into the monitor's menu. Change one setting at a time, wait a minute, retake
+shot 3 without moving the phone and drop it in again.
+
+If something looks off, the page says what: chart sideways, overexposed patches
+(use 1/120 s), reflections, chart too small or not centered, or a photo that
+isn't RAW.
+
 ## The four shots
 
 | Shot | Monitor | Chart | Shutter | Purpose |
