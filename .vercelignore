@@ -1,0 +1,16 @@
+# The hosted API is only api/ plus a few modules of monitor_calibration/ (numpy only, see requirements.txt).
+# pyproject.toml lists the local app's heavy dependencies (scipy, rawpy), which must not be installed here.
+pyproject.toml
+tests/
+docs/
+scripts/
+supabase/
+sessions/
+build/
+.venv/
+.browser-profile/
+*.egg-info/
+run.sh
+run.ps1
+calibrate.py
+README.md
