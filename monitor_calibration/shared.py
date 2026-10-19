@@ -19,8 +19,8 @@ import urllib.request
 
 from . import __version__, analyze, privacy, submission
 
-# The hosted API. Empty until a domain exists; MONCAL_API_URL overrides it (for development).
-DEFAULT_API_URL = ""
+# The hosted API (Vercel functions with a Supabase database). MONCAL_API_URL overrides it (for development).
+DEFAULT_API_URL = "https://monitor-calibration.vercel.app/api/v1"
 TIMEOUT = 15
 LOOKUP_TIMEOUT = 5
 MAX_ANSWER = 256 * 1024

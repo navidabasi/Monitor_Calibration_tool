@@ -21,14 +21,14 @@ accurate results without a reference monitor.
 
 | Phase | State |
 | --- | --- |
-| 0 Release readiness | Files, CI and release workflows written. **Never run** (no GitHub repo yet). |
+| 0 Release readiness | Done. CI runs on GitHub (all OS jobs green except any still being fixed, see below). PyPI publishing is **not set up yet**. |
 | 1 Device detection | Done. Phone tags (allow-list), EDID, Setup UI, Window Management API mapping. |
 | 2 Local correction profiles | Done. |
-| 3 Backend (API, SQL, review tool) | Done in code and tests. **Not deployed.** |
+| 3 Backend (API, SQL, review tool) | Done and **deployed** (Vercel + Supabase, see "Live deployment"). |
 | 4 Client integration | Done, incl. consent, Settings, contributions, deletion. |
 | 5 Hosted website (Pyodide) | **Not started.** |
 | 6 Second device as reference | **Not started.** |
-| 7 Monitor knowledge | Done in code and tests: suggested settings, reference profiles, coverage. Not deployed. |
+| 7 Monitor knowledge | Done and deployed: suggested settings, reference profiles, coverage. |
 
 130 tests pass (`python -m unittest discover -s tests`, about one minute, Python 3.14
 on Windows; syntax is checked for 3.10). Nothing is committed: the git repository is
@@ -121,17 +121,40 @@ Other: `supabase/migrations/` (three files), `scripts/review.py` (admin),
 
 Below the thresholds the API answers `{"found": false}` and **reveals no counts**.
 
+## Live deployment (2026-10-19)
+
+- **API:** `https://monitor-calibration.vercel.app/api/v1` (a Vercel project linked to this
+  repository; every push to `main` deploys). Functions run in Frankfurt (`fra1`), next to
+  the database. Vercel Authentication is **off** on purpose: it's a public API.
+- **Database:** a Supabase project in eu-central-1, with the three migrations applied
+  (verified: RLS on and no policies, the public key is refused on every table and function,
+  the helper functions work, `pg_cron` runs `purge_expired()` hourly).
+- **Environment variables** (Vercel, production and preview): `SUPABASE_URL`,
+  `SUPABASE_SERVICE_ROLE_KEY`, `POW_SECRET`, `IP_SALT_SECRET`, `CRON_SECRET`; the secrets are
+  write-only. `SITE_ORIGIN` and `TURNSTILE_SECRET` stay empty until the hosted website
+  (phase 5) exists.
+- **Hobby plan limits:** the aggregation cron in `vercel.json` runs **once a day** (03:05 UTC),
+  because Hobby doesn't allow hourly. On Pro, change it back to hourly.
+- **`DEFAULT_API_URL`** in `monitor_calibration/shared.py` points at it, so the shared
+  database is on by default (the app still asks for consent before sending anything).
+- Lessons from getting it deployed: Vercel limits `includeFiles` to 256 characters; it finds a
+  Python function by the literal `class handler(BaseHTTPRequestHandler)` in each file under
+  `api/` (so entry files define the class and call `glue.serve`); `.vercelignore` keeps
+  `pyproject.toml` (scipy, rawpy) out of the API bundle; the MCP/API tokens used here could not
+  read build logs, only `errorMessage` on a deployment.
+- **Verified live** with the real app client and synthetic data: a full submission with
+  settings (server measured 6526 K and 0.24 dE itself), nonce replay refused (403), schema
+  violation (400), wrong content type (415), cron refused without the secret and run with it,
+  lookups and coverage answering `found: false`, and deletion by code removing exactly the
+  matching rows. The stored rows held only allow-listed fields, 32-byte hashes and
+  month-or-day dates. The test data was removed afterwards.
+
 ## Not verified (be honest about these when reporting)
 
-- GitHub Actions workflows: never executed. PyPI trusted publishing: not configured
-  (the name `monitor-calibration` was free on 2026-10-19).
-- Supabase: the SQL parses (checked with `pglast`) but was **never applied** to a database.
-  `SupabaseStore` is tested only against a fake HTTP transport, so PostgREST filters, RPC
-  names and column names are checked for shape, not behavior. Run the migrations in a
-  staging project first.
-- Vercel: nothing deployed. `includeFiles`, rewrites and the cron in `vercel.json` are
-  unverified, as is the `from api.v1._lib... ` import path in the entry files on Vercel's
-  runtime.
+- PyPI trusted publishing: not configured (the name `monitor-calibration` was free on
+  2026-10-19). The one-line starters download the repository archive until the first release.
+- Aggregation across several real contributors (accept, quarantine, freeze) runs only
+  against the in-memory store in tests; the live test had a single contributor.
 - Turnstile: tested with a stub; no site key exists.
 - EDID on macOS and Linux, and `window.getScreenDetails()` on a multi-monitor setup: not
   run. EDID reading was verified on one Windows machine.
@@ -140,21 +163,18 @@ Below the thresholds the API answers `{"found": false}` and **reveals no counts*
 
 ## Placeholders and open decisions
 
-- `DEFAULT_API_URL` in `monitor_calibration/shared.py` is **empty**: no domain is decided.
-  Until it is set (or `MONCAL_API_URL` is), the shared database is inactive and the app
-  never shows the consent dialog.
-- The GitHub owner is `navidabasi` everywhere; the repository does not exist yet.
+- No custom domain: the API lives on `monitor-calibration.vercel.app`. Moving to a domain
+  means changing `DEFAULT_API_URL` and, for the hosted site, `SITE_ORIGIN`.
+- The GitHub repository is `navidabasi/Monitor_Calibration_tool`.
 - Turnstile is assumed for the hosted site; the owner hasn't confirmed.
 - Hosted-mode limitation to document (plan phase 5): a browser can't be started with
   `--force-color-profile=srgb`.
 
 ## What to do next
 
-1. **Deployment readiness** (most valuable): make this folder its own git repository,
-   create the GitHub repo, get CI green on all OS jobs, apply the migrations to a staging
-   Supabase project, deploy a staging Vercel project, and run
-   `MONCAL_API_URL=<staging> monitor-calibration` through the whole flow. Fix whatever the
-   fake-transport tests missed. Then decide the domain and set `DEFAULT_API_URL`.
+1. **Release:** set up PyPI trusted publishing (see `.github/workflows/release.yml`), tag
+   `v0.1.0` and check `uvx monitor-calibration` on a clean machine; then switch the default
+   source in `run.sh` and `run.ps1` from the repository archive to the PyPI package.
 2. **Phase 5, hosted website:** the same page, with analysis in a Web Worker. The plan says
    run `monitor_calibration` under Pyodide and swap `rawpy` for a browser RAW decoder
    (evaluate LibRaw as WebAssembly first, then UTIF.js). `raw_io` must choose its backend at

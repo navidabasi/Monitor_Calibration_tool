@@ -343,27 +343,25 @@ integration) and phase 7 (suggested settings, reference profiles, coverage).
 130 tests pass on Python 3.14 (the 27 from before plus 103 new).
 Not built: phases 5 and 6.
 
-What has **not** been exercised, because it needs accounts or services this
-repository can't reach:
+Deployed and verified on 2026-10-19: the GitHub repository (CI runs; see
+`docs/HANDOFF.md` for the current state), the Supabase database (three migrations
+applied, row level security checked from outside) and the Vercel API at
+`monitor-calibration.vercel.app`, exercised end to end with the real app client
+(submission with settings, replay and schema rejection, cron, lookups, deletion by
+code). Details and Hobby-plan limits are in `docs/HANDOFF.md`.
 
-- GitHub Actions: the workflows are written but have never run (there is no
-  GitHub repository yet; the git repository one level up has no commits and
-  `.github/` must sit at the root of whichever repository the project ends up in).
+What has **not** been exercised:
+
 - PyPI: the name `monitor-calibration` was free on 2026-10-19. Trusted
   publishing has to be set up on pypi.org first (see `release.yml`).
-- Supabase and Vercel: nothing is deployed. The SQL parses (checked with
-  pglast) but has not been applied to a database; the API logic runs against an
-  in-memory copy of the store (`MemoryStore`), and `SupabaseStore` is tested
-  against a fake HTTP transport, so the PostgREST filters, RPC names and column
-  names are checked for shape only. Run the migration and a staging deploy
-  before trusting it. Vercel's `includeFiles` and rewrites in `vercel.json` are
-  likewise unverified.
+- Aggregation across several real contributors, which runs only against the
+  in-memory store (`MemoryStore`) in tests.
 - Turnstile: the server-side check is tested with a stub; no site key exists.
 - Window Management API (`window.getScreenDetails()`) and EDID reading on
   macOS and Linux: written, not run on real multi-monitor setups. EDID reading
   was verified on this Windows machine.
-- `DEFAULT_API_URL` in `monitor_calibration/shared.py` is empty (no domain yet;
-  the GitHub owner `navidabasi` is filled in everywhere). Until a domain exists the shared database is inactive and the app never asks for consent.
+- `DEFAULT_API_URL` in `monitor_calibration/shared.py` is `https://monitor-calibration.vercel.app/api/v1`
+  (no custom domain). The app still asks for consent before sending anything.
 
 Decisions that differ from the text below, and why:
 
@@ -497,7 +495,7 @@ Each phase ends with passing tests and an updated README section.
   session B on the same simulated phone, measures B's white within 60 K of truth.
 
 ### Phase 3: backend
-**Status: done in code and tests** (`api/v1/`, `supabase/migrations/`, `scripts/review.py`, `tests/test_api.py`, `tests/test_review.py`, `tests/test_supabase_store.py`); not deployed. Poisoning test: 5 outliers against 10 honest submissions leave the median within 30 K (18 K measured).
+**Status: done in code and tests** (`api/v1/`, `supabase/migrations/`, `scripts/review.py`, `tests/test_api.py`, `tests/test_review.py`, `tests/test_supabase_store.py`); deployed. Poisoning test: 5 outliers against 10 honest submissions leave the median within 30 K (18 K measured).
 
 - `supabase/migrations/`: tables (section 12), RLS deny-all, pg_cron jobs
   (aggregate hourly, purge rate-limit rows and IP hashes, delete expired nonces).
@@ -539,7 +537,7 @@ Each phase ends with passing tests and an updated README section.
   screens in Natural mode color-manage sRGB content).
 
 ### Phase 7: monitor knowledge
-**Status: done in code and tests** (`recipes.py`, `refprofiles.py`, `coverage.py`, `scripts/coverage.py`, `tests/test_recipes.py`, `tests/test_reference_profiles.py`); not deployed. The hosted website's own Coverage page waits for phase 5; `docs/COVERAGE.md` and `GET /api/v1/coverage` exist.
+**Status: done in code and tests** (`recipes.py`, `refprofiles.py`, `coverage.py`, `scripts/coverage.py`, `tests/test_recipes.py`, `tests/test_reference_profiles.py`); deployed. The hosted website's own Coverage page waits for phase 5; `docs/COVERAGE.md` and `GET /api/v1/coverage` exist.
 
 - Reference monitor profiles: aggregated measured primaries per model from ICC
   references, used to replace "assume sRGB" when available.

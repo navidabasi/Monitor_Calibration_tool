@@ -296,8 +296,7 @@ at least three independent contributors.
   readings, rejects edited or implausible sessions, and only believes a
   correction once independent contributors agree ([`docs/SECURITY.md`](docs/SECURITY.md)).
 
-Until a server is configured the feature is inactive: the app shows no
-consent dialog and sends nothing.
+Nothing is sent until you answer the consent dialog. It asks once, at first use.
 
 ## Privacy
 

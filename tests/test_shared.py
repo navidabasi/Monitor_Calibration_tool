@@ -304,9 +304,13 @@ class SharedEndToEnd(Base):
 
     def test_only_https_or_local_http(self):
         for url, ok in (("https://example.org/api/v1", True), ("http://127.0.0.1:8787/api/v1", True), ("http://localhost/api/v1", True),
-                        ("http://example.org/api/v1", False), ("ftp://example.org", False), ("file:///etc/passwd", False), ("", False)):
+                        ("http://example.org/api/v1", False), ("ftp://example.org", False), ("file:///etc/passwd", False)):
             with mock.patch.dict(os.environ, {"MONCAL_API_URL": url}):
                 self.assertEqual(shared.configured(), ok, url)
+        # With nothing set, the built-in address is used, and it must itself be a safe one.
+        with mock.patch.dict(os.environ, {"MONCAL_API_URL": ""}):
+            self.assertTrue(shared.configured())
+            self.assertTrue(shared.api_url().startswith("https://"))
 
     def test_payload_has_only_allow_listed_fields(self):
         photos = [dict(p, result=dict(p["result"])) for p in self.photos]
