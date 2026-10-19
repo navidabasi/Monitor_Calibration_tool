@@ -20,7 +20,7 @@ jobs:
           - { os: ubuntu-latest, python: "3.14" }
           - { os: windows-latest, python: "3.13" }
           - { os: macos-latest, python: "3.13" }   # Apple Silicon
-          - { os: macos-13, python: "3.13" }       # Intel
+          - { os: macos-15-intel, python: "3.13" }       # Intel
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -37,7 +37,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest, macos-13]
+        os: [ubuntu-latest, windows-latest, macos-latest, macos-15-intel]
     env:
       UV_PYTHON_PREFERENCE: only-managed
       MONCAL_SOURCE: .
