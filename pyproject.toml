@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "monitor-calibration"
+dynamic = ["version"]
+description = "Calibrate your monitor with your phone camera: RAW photos of on-screen test charts, analyzed on your own computer."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+# Upper bound on purpose: uv picks the newest Python it can download, and rawpy
+# (LibRaw) has no prebuilt wheels for brand-new Python versions at first, so
+# installs on machines without Python would try to compile it and fail.
+# Raise this once rawpy publishes wheels for the next version.
+requires-python = ">=3.10,<3.15"
+dependencies = [
+    "numpy>=2.0",
+    "scipy>=1.13",
+    # rawpy stopped publishing Intel Mac wheels after 0.25.1 (Python 3.10-3.13 only),
+    # so Intel Macs stay on 0.25.x; run.sh asks uv for Python 3.13 there.
+    "rawpy>=0.24; sys_platform != 'darwin' or platform_machine != 'x86_64'",
+    "rawpy>=0.24,<0.26; sys_platform == 'darwin' and platform_machine == 'x86_64'",
+]
+keywords = ["monitor", "calibration", "color", "display", "raw", "dng", "colorimetry"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Topic :: Multimedia :: Graphics",
+]
+
+[project.optional-dependencies]
+dev = ["build>=1.2"]
+
+[project.urls]
+Homepage = "https://github.com/navidabasi/monitor-calibration"
+Documentation = "https://github.com/navidabasi/monitor-calibration/tree/main/docs"
+Privacy = "https://github.com/navidabasi/monitor-calibration/blob/main/docs/PRIVACY.md"
+Issues = "https://github.com/navidabasi/monitor-calibration/issues"
+
+[project.scripts]
+monitor-calibration = "monitor_calibration.cli:main"
+moncal = "monitor_calibration.cli:main"
+
+[tool.setuptools]
+packages = ["monitor_calibration"]
+
+[tool.setuptools.package-data]
+monitor_calibration = ["web/*"]
+
+[tool.setuptools.dynamic]
+version = { attr = "monitor_calibration.__version__" }

@@ -1,0 +1,37 @@
+name: Wheel availability
+
+# Every dependency must resolve to prebuilt wheels on every supported platform,
+# or users without a compiler would fail to install. Weekly, so a dependency
+# release that drops a platform is caught before users hit it.
+
+on:
+  schedule:
+    - cron: "17 5 * * 1"
+  pull_request:
+    paths: [pyproject.toml, .github/workflows/wheels.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { platform: x86_64-pc-windows-msvc, python: "3.14" }
+          - { platform: aarch64-pc-windows-msvc, python: "3.14" }
+          - { platform: aarch64-apple-darwin, python: "3.14" }
+          - { platform: x86_64-apple-darwin, python: "3.13" }   # rawpy has no newer Intel Mac wheels
+          - { platform: x86_64-manylinux_2_28, python: "3.14" }
+          - { platform: aarch64-manylinux_2_28, python: "3.14" }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Resolve with wheels only
+        run: >
+          uv pip compile pyproject.toml --only-binary :all:
+          --python-platform ${{ matrix.platform }}
+          --python-version ${{ matrix.python }}

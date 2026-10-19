@@ -1,0 +1,58 @@
+name: Release
+
+# Publishes to PyPI from a signed version tag (v1.2.3) with trusted publishing
+# (OIDC, no token stored anywhere) and build attestations. Nobody uploads from
+# a laptop. One-time setup on pypi.org: add this repository and the workflow
+# name "release.yml" under the project's "Trusted publishers", with the
+# environment name "pypi".
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Tag matches package version
+        run: |
+          python - <<'PY'
+          import os, re, sys
+          version = re.search(r'__version__ = "([^"]+)"', open("monitor_calibration/__init__.py").read()).group(1)
+          tag = os.environ["GITHUB_REF_NAME"].lstrip("v")
+          sys.exit(0 if version == tag else f"tag {tag} != package version {version}")
+          PY
+      - run: python -m pip install build -e ".[dev]"
+      - run: python -m unittest discover -s tests
+      - run: python -m build
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
