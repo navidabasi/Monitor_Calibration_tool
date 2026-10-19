@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+sessions/
+.browser-profile/
+build/
+dist/
+*.egg-info/
+.env
+.env.*
+!.env.example
+node_modules/
+.vercel/
+profiles/

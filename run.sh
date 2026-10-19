@@ -1,0 +1,50 @@
+#!/bin/sh
+# Start Monitor calibration on macOS or Linux. Works on a machine without Python.
+#
+#   curl -LsSf https://raw.githubusercontent.com/navidabasi/Monitor_Calibration_tool/main/run.sh | sh
+#
+# If uv isn't installed, it installs it first (from astral.sh, into your home
+# folder, no sudo needed). uv then downloads its own private copy of Python if
+# needed and starts the app. Nothing else on the system is changed.
+#
+# MONCAL_SOURCE overrides where the app comes from, for example
+#   MONCAL_SOURCE=monitor-calibration sh run.sh      (the PyPI package)
+
+set -eu
+# Until the first PyPI release this is the repository archive (no git needed). Afterwards, change the default to
+# monitor-calibration.
+SOURCE="${MONCAL_SOURCE:-https://github.com/navidabasi/Monitor_Calibration_tool/archive/refs/heads/main.zip}"
+
+find_uvx() {
+    if command -v uvx >/dev/null 2>&1; then
+        command -v uvx
+        return 0
+    fi
+    for dir in "${XDG_BIN_HOME:-}" "$HOME/.local/bin" "$HOME/.cargo/bin"; do
+        if [ -n "$dir" ] && [ -x "$dir/uvx" ]; then
+            echo "$dir/uvx"
+            return 0
+        fi
+    done
+    return 1
+}
+
+if ! UVX="$(find_uvx)"; then
+    echo "Installing uv, a small tool that runs Python apps (from astral.sh)..."
+    if command -v curl >/dev/null 2>&1; then
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+    elif command -v wget >/dev/null 2>&1; then
+        wget -qO- https://astral.sh/uv/install.sh | sh
+    else
+        echo "Please install curl or wget first, then run this again." >&2
+        exit 1
+    fi
+    if ! UVX="$(find_uvx)"; then
+        echo "uv was installed but uvx was not found. Open a new terminal and run: uvx monitor-calibration" >&2
+        exit 1
+    fi
+fi
+
+# Python 3.13 on every system: uv would otherwise pick the newest Python it can download, which the RAW reader (rawpy)
+# has no ready-made build for yet, and Intel Macs only have builds up to 3.13.
+exec "$UVX" --python 3.13 --from "$SOURCE" monitor-calibration "$@"

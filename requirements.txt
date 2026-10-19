@@ -1,0 +1,4 @@
+# What the hosted API (Vercel) installs: numpy only. scipy and rawpy are used by the
+# local app, never by api/v1, and are deliberately kept out of the serverless bundle.
+# For development use `pip install -e .` instead (see CONTRIBUTING.md).
+numpy>=2.0
