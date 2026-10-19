@@ -19,7 +19,7 @@ dependencies = [
     "scipy>=1.13",
     # rawpy stopped publishing Intel Mac wheels after 0.25.1 (Python 3.10-3.13 only),
     # so Intel Macs stay on 0.25.x; run.sh asks uv for Python 3.13 there.
-    "rawpy>=0.24; sys_platform != 'darwin' or platform_machine != 'x86_64'",
+    "rawpy>=0.24,<0.28; sys_platform != 'darwin' or platform_machine != 'x86_64'",
     "rawpy>=0.24,<0.26; sys_platform == 'darwin' and platform_machine == 'x86_64'",
 ]
 keywords = ["monitor", "calibration", "color", "display", "raw", "dng", "colorimetry"]
