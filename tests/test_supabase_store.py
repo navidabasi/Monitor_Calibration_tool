@@ -29,12 +29,21 @@ def store(*answers):
 
 
 class SupabaseStoreTests(unittest.TestCase):
+    def test_new_style_secret_keys_are_sent_only_as_apikey(self):
+        for key, bearer in (("sb_secret_abc123", False), ("eyJhbGciOi.payload.sig", True)):
+            s, fake = store([])
+            s.__init__("https://project.supabase.co", key, request=fake)
+            s.list_phones()
+            headers = fake.calls[0]["headers"]
+            self.assertEqual(headers["apikey"], key)
+            self.assertEqual("Authorization" in headers, bearer)
+
     def test_every_call_carries_the_service_key_and_no_other_host(self):
         s, fake = store([])
         s.list_phones()
         call = fake.calls[0]
         self.assertEqual(call["headers"]["apikey"], "service-key")
-        self.assertEqual(call["headers"]["Authorization"], "Bearer service-key")
+        self.assertNotIn("Authorization", call["headers"])  # "service-key" isn't a JWT: see the test above
         self.assertEqual(call["path"], "/rest/v1/phones")
 
     def test_phone_is_looked_up_then_created(self):

@@ -14,7 +14,7 @@
     { "source": "/api/v1/cron/aggregate", "destination": "/api/v1/cron_aggregate" }
   ],
   "crons": [
-    { "path": "/api/v1/cron/aggregate", "schedule": "5 * * * *" }
+    { "path": "/api/v1/cron/aggregate", "schedule": "5 3 * * *" }
   ],
   "headers": [
     {

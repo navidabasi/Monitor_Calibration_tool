@@ -47,7 +47,9 @@ def eq(value):
 class SupabaseStore:
     def __init__(self, url, service_key, request=None):
         self.base = url.rstrip("/") + "/rest/v1"
-        self.headers = {"apikey": service_key, "Authorization": f"Bearer {service_key}", "Content-Type": "application/json"}
+        self.headers = {"apikey": service_key, "Content-Type": "application/json"}
+        if service_key.startswith("eyJ"):  # the legacy service_role key is a JWT; the newer sb_secret_ keys are not
+            self.headers["Authorization"] = f"Bearer {service_key}"
         self._request = request or _urlopen_json
 
     # --- plumbing
