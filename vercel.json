@@ -3,7 +3,7 @@
   "functions": {
     "api/v1/*.py": {
       "maxDuration": 30,
-      "includeFiles": "{api/v1/_lib/*.py,api/__init__.py,api/v1/__init__.py,monitor_calibration/__init__.py,monitor_calibration/_pow.py,monitor_calibration/analyze.py,monitor_calibration/chart.py,monitor_calibration/colorimetry.py,monitor_calibration/privacy.py,monitor_calibration/submission.py}"
+      "includeFiles": "{api/**,monitor_calibration/*.py}"
     }
   },
   "rewrites": [
